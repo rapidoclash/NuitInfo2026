@@ -4,6 +4,10 @@ updates:
     directory: /
     schedule:
       interval: weekly
+    # Pas de mises à jour majeures automatiques : elles cassent souvent la compatibilité.
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
     groups:
       dependances:
         patterns: ["*"]
