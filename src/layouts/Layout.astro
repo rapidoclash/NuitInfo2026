@@ -1,0 +1,47 @@
+---
+import "../styles/global.css";
+
+interface Props {
+  title: string;
+  description: string;
+}
+
+const { title, description } = Astro.props;
+---
+
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content={description} />
+    <meta name="referrer" content="strict-origin-when-cross-origin" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <title>{title}</title>
+  </head>
+  <body class="min-h-dvh bg-white font-sans text-zinc-900 antialiased dark:bg-zinc-950 dark:text-zinc-100">
+    <a
+      href="#contenu"
+      class="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-50 focus:rounded focus:bg-zinc-900 focus:px-4 focus:py-2 focus:text-white"
+    >
+      Aller au contenu
+    </a>
+
+    <header class="border-b border-zinc-200 dark:border-zinc-800">
+      <nav aria-label="Navigation principale" class="mx-auto flex max-w-5xl items-center justify-between p-4">
+        <a href="/" class="font-bold">Nuit de l'Info 2026</a>
+        <ul class="flex gap-4">
+          <li><a href="/" class="underline-offset-4 hover:underline">Accueil</a></li>
+        </ul>
+      </nav>
+    </header>
+
+    <main id="contenu" tabindex="-1" class="mx-auto max-w-5xl p-4">
+      <slot />
+    </main>
+
+    <footer class="mx-auto max-w-5xl border-t border-zinc-200 p-4 text-sm text-zinc-600 dark:border-zinc-800 dark:text-zinc-400">
+      <p>Site éco-conçu et accessible.</p>
+    </footer>
+  </body>
+</html>

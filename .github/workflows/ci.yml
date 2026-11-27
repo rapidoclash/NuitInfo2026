@@ -1,0 +1,85 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  qualite:
+    name: Qualité du code et build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Lint et format (Biome)
+        run: npx biome ci .
+      - name: Types (astro check)
+        run: npx astro check
+      - name: Build
+        run: npm run build
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist
+          retention-days: 3
+
+  securite:
+    name: Sécurité
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: npm
+      - name: Failles connues dans les dépendances
+        run: npm audit --audit-level=high
+      - name: Secrets commités par erreur (gitleaks)
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  audits:
+    name: Accessibilité, performance et EcoIndex
+    needs: qualite
+    runs-on: ubuntu-latest
+    env:
+      PUPPETEER_SKIP_DOWNLOAD: "true"
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+      - uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist
+      - name: Lighthouse (performance, accessibilité, bonnes pratiques, SEO)
+        run: npx --yes @lhci/cli@0.16 autorun
+      - name: EcoIndex (estimation à partir de Lighthouse)
+        run: node scripts/ecoindex.mjs .lighthouseci
+      - name: Accessibilité WCAG 2 AA (pa11y-ci)
+        run: |
+          python3 -m http.server 4321 --directory dist &
+          sleep 2
+          npx --yes pa11y-ci@5
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: rapports-lighthouse
+          path: .lighthouseci
+          retention-days: 7
