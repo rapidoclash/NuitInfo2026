@@ -29,7 +29,7 @@ jobs:
         run: npx astro check
       - name: Build
         run: npm run build
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: dist
           path: dist
@@ -77,7 +77,7 @@ jobs:
           python3 -m http.server 4321 --directory dist &
           sleep 2
           npx --yes pa11y-ci@5
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         if: always()
         with:
           name: rapports-lighthouse
